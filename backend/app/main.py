@@ -1,24 +1,18 @@
 from fastapi import FastAPI
-from langchain_chroma import Chroma
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from pydantic import BaseModel
 
-from app.config import settings
+from app.pipeline import KafiPipeline
 
 app = FastAPI(title="Kafi API")
 
-_embeddings = GoogleGenerativeAIEmbeddings(
-    model=settings.embedding_model,
-    google_api_key=settings.google_api_key,
-)
-_vectorstore = Chroma(
-    collection_name=settings.collection_name,
-    embedding_function=_embeddings,
-    persist_directory=settings.chroma_persist_dir,
-)
+_pipeline = KafiPipeline()
 
 
-class RetrieveRequest(BaseModel):
+class ChatRequest(BaseModel):
+    message: str
+
+
+class DebugRetrieveRequest(BaseModel):
     query: str
     k: int = 3
 
@@ -28,12 +22,15 @@ def health():
     return {"status": "ok"}
 
 
+@app.post("/chat")
+def chat(request: ChatRequest):
+    return _pipeline.run(request.message)
+
+
 @app.post("/debug/retrieve")
-def debug_retrieve(request: RetrieveRequest):
-    """Raw retrieval against the FAQ collection, no normalization or generation.
-    Exists to sanity-check ingestion before the full two-step pipeline is wired up.
-    """
-    results = _vectorstore.similarity_search_with_score(request.query, k=request.k)
+def debug_retrieve(request: DebugRetrieveRequest):
+    """Raw retrieval against the FAQ collection, no normalization or generation."""
+    results = _pipeline.vectorstore.similarity_search_with_score(request.query, k=request.k)
     return [
         {
             "faq_id": doc.metadata["faq_id"],
