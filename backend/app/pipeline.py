@@ -13,8 +13,22 @@ from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from app.config import settings
+
+
+def _is_rate_limit_error(exc: BaseException) -> bool:
+    message = str(exc)
+    return "429" in message or "RESOURCE_EXHAUSTED" in message or "rate limit" in message.lower()
+
+
+rate_limit_retry = retry(
+    retry=retry_if_exception(_is_rate_limit_error),
+    wait=wait_exponential(multiplier=2, min=2, max=60),
+    stop=stop_after_attempt(5),
+    reraise=True,
+)
 
 NORMALIZE_SYSTEM_PROMPT = """You are a query normalization utility for a Pakistani fintech \
 support system. The user message may be in Roman Urdu, English, or a code-switched mix of \
@@ -40,6 +54,7 @@ human agent — do not invent policy details, amounts, or timeframes that aren't
 Keep the reply concise, like a real chat support message, not an essay."""
 
 
+@rate_limit_retry
 def normalize_query(chat_model: ChatGoogleGenerativeAI, raw_query: str) -> str:
     response = chat_model.invoke(
         [
@@ -50,10 +65,12 @@ def normalize_query(chat_model: ChatGoogleGenerativeAI, raw_query: str) -> str:
     return response.text.strip()
 
 
+@rate_limit_retry
 def retrieve_faqs(vectorstore: Chroma, normalized_query: str, k: int = 3) -> list[Document]:
     return vectorstore.similarity_search(normalized_query, k=k)
 
 
+@rate_limit_retry
 def generate_reply(chat_model: ChatGoogleGenerativeAI, raw_query: str, faq_docs: list[Document]) -> str:
     context = "\n\n".join(doc.page_content for doc in faq_docs)
     prompt = f"FAQ CONTEXT:\n{context}\n\nUSER'S ORIGINAL MESSAGE:\n{raw_query}"
