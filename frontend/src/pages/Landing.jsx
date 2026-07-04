@@ -471,7 +471,7 @@ function KafiSection() {
           </p>
           <ul className="mt-6 space-y-3 text-sm text-emerald-100/80">
             {[
-              'Understands Roman Urdu, English, and everything in between (typos included).',
+              'Understands Urdu, Roman Urdu, English, and everything in between (typos included).',
               'Answers come from Noor’s real help articles, so amounts and timeframes are accurate.',
               'Hands you to a human agent when a question needs one, instead of going in circles.',
             ].map((item) => (

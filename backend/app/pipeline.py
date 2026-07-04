@@ -34,13 +34,15 @@ rate_limit_retry = retry(
 )
 
 NORMALIZE_SYSTEM_PROMPT = """You are a query normalization utility for a Pakistani fintech \
-support system. The user message may be in Roman Urdu, English, or a code-switched mix of \
-both, and may contain typos or inconsistent transliteration spelling.
+support system. The user message may be in Roman Urdu, English, a code-switched mix of \
+both, or Urdu written in Urdu (Arabic) script, and may contain typos or inconsistent \
+transliteration spelling.
 
 Return exactly three lines, no explanation, quotes, or preamble:
-LANGUAGE: classify the user's message as one of: english | roman_urdu | code_switched. \
-Use "english" only if the message is entirely English. Use "roman_urdu" if it is almost \
-entirely Urdu written in Latin script. Otherwise use "code_switched".
+LANGUAGE: classify the user's message as one of: english | roman_urdu | code_switched | \
+urdu_script. Use "english" only if the message is entirely English. Use "roman_urdu" if it \
+is almost entirely Urdu written in Latin script. Use "urdu_script" if it is written in Urdu \
+(Arabic) script. Otherwise use "code_switched".
 TYPE: classify as "question" if the message asks for information, requests help, or \
 reports a problem. Classify as "smalltalk" if it is only a greeting, thanks, \
 acknowledgement (e.g. "ok", "will try", "thanks yaar"), or goodbye, with no support \
@@ -53,9 +55,9 @@ GENERATE_SYSTEM_PROMPT = """You are a customer support assistant for Noor, a Pak
 fintech company (mobile wallet, EasyPaisa/JazzCash-linked transfers, bank transfers, CNIC/KYC \
 verification, bill payments).
 
-A LANGUAGE RULE below states which language to reply in, based on how the user wrote — \
-follow it strictly. Never use Urdu script. Match the user's tone: if they wrote casually, \
-stay casual; do not switch to stiff formal English.
+A LANGUAGE RULE below states which language and script to reply in, based on how the user \
+wrote — follow it strictly. Match the user's tone: if they wrote casually, stay casual; do \
+not switch to stiff formal English.
 
 Ground your answer strictly in the FAQ CONTEXT provided. If the context does not contain \
 enough information to answer, say so honestly in the user's style and suggest escalating to a \
@@ -69,8 +71,9 @@ Keep the reply concise, like a real chat support message, not an essay."""
 
 LANGUAGE_DIRECTIVES = {
     "english": "LANGUAGE RULE: The user wrote entirely in English. Reply in English only — no Roman Urdu words or phrases.",
-    "roman_urdu": "LANGUAGE RULE: The user wrote in Roman Urdu. Reply in Roman Urdu (Latin script), keeping common English fintech terms (app, transaction, refund) where natural.",
-    "code_switched": "LANGUAGE RULE: The user mixed Roman Urdu and English. Reply in the same natural mix.",
+    "roman_urdu": "LANGUAGE RULE: The user wrote in Roman Urdu. Reply in Roman Urdu (Latin script), keeping common English fintech terms (app, transaction, refund) where natural. Do not use Urdu (Arabic) script.",
+    "code_switched": "LANGUAGE RULE: The user mixed Roman Urdu and English. Reply in the same natural mix. Do not use Urdu (Arabic) script.",
+    "urdu_script": "LANGUAGE RULE: The user wrote in Urdu script. Reply in proper Urdu script (اردو), warm and clear — not overly formal or literary.",
 }
 
 
@@ -92,8 +95,11 @@ ROMAN_URDU_MARKERS = frozenset(
 
 
 def _guard_language(raw_query: str, language: str) -> str:
-    """Deterministic override for the LLM's language label. If the message
-    contains no Roman Urdu marker words, it is English — full stop."""
+    """Deterministic overrides for the LLM's language label. Urdu script is
+    detectable by Unicode range alone; and a Latin message with no Roman
+    Urdu marker words is English — full stop."""
+    if re.search(r"[؀-ۿ]", raw_query):
+        return "urdu_script"
     tokens = re.findall(r"[a-z']+", raw_query.lower())
     if not tokens:
         return language

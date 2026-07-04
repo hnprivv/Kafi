@@ -1,0 +1,18 @@
+# Render Blueprint: deploys the FastAPI backend.
+# The build step also downloads the local embedding model (~34MB, cached in
+# backend/model_cache) and ingests the FAQ CSV into ChromaDB — chroma_db/ is
+# gitignored, so the vector store must be built at deploy time. Both persist
+# into the running instance.
+services:
+  - type: web
+    name: kafi-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt && python -m app.ingest
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.13.2
