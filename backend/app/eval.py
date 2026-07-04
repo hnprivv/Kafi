@@ -12,9 +12,9 @@ single end-to-end score can't tell them apart:
   retrieval_only  Skips the LLM normalization call and retrieves directly
                    using the dataset's ground-truth normalized_query_en.
                    Isolates whether the embedding retrieval itself is sound,
-                   independent of translation quality. Only costs embedding
-                   calls, so it can run on nearly the full 1000 rows even
-                   when the chat model's daily quota is exhausted.
+                   independent of translation quality. Embeddings run locally
+                   (fastembed), so this mode costs nothing, needs no rate
+                   limiting, and defaults to the full dataset.
 
 Usage:
     python -m app.eval --mode retrieval_only
@@ -34,12 +34,10 @@ from app.pipeline import KafiPipeline, normalize_query, retrieve_faqs
 QUERIES_CSV_PATH = "../data/noor_synthetic_queries.csv"
 RESULTS_CSV_PATH = "../data/eval_results.csv"
 
-# Conservative defaults, kept under the observed quota ceilings
-# (Gemini 3.1 Flash Lite: 15 RPM / 500 RPD, Gemini Embedding 1: 100 RPM / 1000 RPD).
+# Full mode is paced by the chat model's free-tier quota (Gemini 3.1 Flash
+# Lite: 15 RPM / 500 RPD). Embeddings are local, so retrieval_only has no cap.
 FULL_MODE_DEFAULT_SAMPLE = 250
-RETRIEVAL_ONLY_DEFAULT_SAMPLE = 850
 FULL_MODE_SAFE_RPM = 12
-RETRIEVAL_ONLY_SAFE_RPM = 80
 
 
 class RateLimiter:
@@ -69,14 +67,13 @@ def stratified_sample(df: pd.DataFrame, n: int, stratify_col: str = "intent") ->
     return sampled.reset_index(drop=True)
 
 
-def score_row(pipeline: KafiPipeline, row: pd.Series, mode: str, limiter: RateLimiter, k: int = 3) -> dict:
+def score_row(pipeline: KafiPipeline, row: pd.Series, mode: str, limiter: RateLimiter | None, k: int = 3) -> dict:
     try:
         if mode == "full":
             limiter.acquire()
             normalized = normalize_query(pipeline.chat_model, row["raw_query"])
         else:
             normalized = row["normalized_query_en"]
-            limiter.acquire()
 
         docs = retrieve_faqs(pipeline.vectorstore, normalized, k=k)
         retrieved_ids = [doc.metadata["faq_id"] for doc in docs]
@@ -117,11 +114,10 @@ def run_eval(mode: str, sample: int | None, workers: int) -> pd.DataFrame:
     queries = pd.read_csv(QUERIES_CSV_PATH)
 
     if sample is None:
-        sample = FULL_MODE_DEFAULT_SAMPLE if mode == "full" else RETRIEVAL_ONLY_DEFAULT_SAMPLE
+        sample = FULL_MODE_DEFAULT_SAMPLE if mode == "full" else len(queries)
     queries = stratified_sample(queries, sample)
 
-    rpm = FULL_MODE_SAFE_RPM if mode == "full" else RETRIEVAL_ONLY_SAFE_RPM
-    limiter = RateLimiter(rpm)
+    limiter = RateLimiter(FULL_MODE_SAFE_RPM) if mode == "full" else None
 
     pipeline = KafiPipeline()
     results = []

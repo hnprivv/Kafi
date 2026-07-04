@@ -7,9 +7,9 @@ Run once after regenerating the FAQ dataset:
 import pandas as pd
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from app.config import settings
+from app.embeddings import get_embeddings
 
 
 def load_faq_documents(csv_path: str) -> list[Document]:
@@ -29,10 +29,7 @@ def load_faq_documents(csv_path: str) -> list[Document]:
 
 
 def build_vectorstore() -> Chroma:
-    embeddings = GoogleGenerativeAIEmbeddings(
-        model=settings.embedding_model,
-        google_api_key=settings.google_api_key,
-    )
+    embeddings = get_embeddings()
     documents = load_faq_documents(settings.faq_csv_path)
 
     vectorstore = Chroma(

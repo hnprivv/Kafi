@@ -12,10 +12,11 @@ knowledge base is unreliable (transliteration spelling varies). So instead:
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from app.config import settings
+from app.embeddings import get_embeddings
 
 
 def _is_rate_limit_error(exc: BaseException) -> bool:
@@ -85,10 +86,7 @@ def generate_reply(chat_model: ChatGoogleGenerativeAI, raw_query: str, faq_docs:
 
 class KafiPipeline:
     def __init__(self) -> None:
-        self.embeddings = GoogleGenerativeAIEmbeddings(
-            model=settings.embedding_model,
-            google_api_key=settings.google_api_key,
-        )
+        self.embeddings = get_embeddings()
         self.chat_model = ChatGoogleGenerativeAI(
             model=settings.chat_model,
             google_api_key=settings.google_api_key,
