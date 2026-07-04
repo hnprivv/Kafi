@@ -72,7 +72,7 @@ def score_row(pipeline: KafiPipeline, row: pd.Series, mode: str, limiter: RateLi
         language_detected = ""
         if mode == "full":
             limiter.acquire()
-            normalized, language_detected = normalize_query(pipeline.chat_model, row["raw_query"])
+            normalized, language_detected, _ = normalize_query(pipeline.chat_model, row["raw_query"])
         else:
             normalized = row["normalized_query_en"]
 
