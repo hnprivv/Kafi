@@ -1,4 +1,4 @@
-"""Scores retrieval accuracy against zarlabs_queries.csv ground truth.
+"""Scores retrieval accuracy against noor_synthetic_queries.csv ground truth.
 
 Two modes, because the pipeline has two independent failure points and a
 single end-to-end score can't tell them apart:
@@ -31,7 +31,7 @@ import pandas as pd
 
 from app.pipeline import KafiPipeline, normalize_query, retrieve_faqs
 
-QUERIES_CSV_PATH = "../data/zar_labs_synthetic_queries.csv"
+QUERIES_CSV_PATH = "../data/noor_synthetic_queries.csv"
 RESULTS_CSV_PATH = "../data/eval_results.csv"
 
 # Conservative defaults, kept under the observed quota ceilings

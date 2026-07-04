@@ -1,4 +1,4 @@
-"""Embeds zarlabs_faq.csv into the persistent ChromaDB collection.
+"""Embeds noor_faq_knowledge_base.csv into the persistent ChromaDB collection.
 
 Run once after regenerating the FAQ dataset:
     python -m app.ingest

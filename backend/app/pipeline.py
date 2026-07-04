@@ -39,7 +39,7 @@ searching an English-language FAQ knowledge base. Preserve the original meaning 
 exactly. Do not answer the question. Do not add information. Return only the rewritten text, \
 with no explanation, quotes, or preamble."""
 
-GENERATE_SYSTEM_PROMPT = """You are a customer support assistant for Zar Labs, a Pakistani \
+GENERATE_SYSTEM_PROMPT = """You are a customer support assistant for Noor, a Pakistani \
 fintech company (mobile wallet, EasyPaisa/JazzCash-linked transfers, bank transfers, CNIC/KYC \
 verification, bill payments).
 

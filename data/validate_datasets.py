@@ -1,7 +1,7 @@
 import pandas as pd
 
-FAQ_PATH = "zar_labs_faq_knowledge_base.csv"
-QUERIES_PATH = "zar_labs_synthetic_queries.csv"
+FAQ_PATH = "noor_faq_knowledge_base.csv"
+QUERIES_PATH = "noor_synthetic_queries.csv"
 
 EXPECTED_FAQ_COLS = ["faq_id", "category", "question_en", "answer_en", "payment_method", "keywords"]
 EXPECTED_QUERY_COLS = [

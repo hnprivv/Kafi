@@ -1,0 +1,29 @@
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400..700&family=Noto+Naskh+Arabic:wght@400..700&family=Inter:wght@400;500;600;700&display=swap");
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-nastaliq: "Noto Nastaliq Urdu", serif;
+  --font-naskh: "Noto Naskh Arabic", serif;
+
+  --color-emerald-950: #06231c;
+  --color-emerald-900: #0a3329;
+  --color-emerald-800: #0f4a3a;
+  --color-emerald-700: #146149;
+  --color-emerald-600: #1b7d5c;
+  --color-emerald-500: #229a70;
+
+  --color-gold-400: #f2cc7f;
+  --color-gold-300: #f6da9e;
+  --color-gold-200: #fae8bf;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-emerald-950);
+}
