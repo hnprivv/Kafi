@@ -35,18 +35,21 @@ NORMALIZE_SYSTEM_PROMPT = """You are a query normalization utility for a Pakista
 support system. The user message may be in Roman Urdu, English, or a code-switched mix of \
 both, and may contain typos or inconsistent transliteration spelling.
 
-Rewrite the message as a single, clear, plain-English question or statement suitable for \
-searching an English-language FAQ knowledge base. Preserve the original meaning and intent \
-exactly. Do not answer the question. Do not add information. Return only the rewritten text, \
-with no explanation, quotes, or preamble."""
+Return exactly two lines, no explanation, quotes, or preamble:
+LANGUAGE: classify the user's message as one of: english | roman_urdu | code_switched. \
+Use "english" only if the message is entirely English. Use "roman_urdu" if it is almost \
+entirely Urdu written in Latin script. Otherwise use "code_switched".
+NORMALIZED: the message rewritten as a single, clear, plain-English question or statement \
+suitable for searching an English-language FAQ knowledge base. Preserve the original meaning \
+and intent exactly. Do not answer the question. Do not add information."""
 
 GENERATE_SYSTEM_PROMPT = """You are a customer support assistant for Noor, a Pakistani \
 fintech company (mobile wallet, EasyPaisa/JazzCash-linked transfers, bank transfers, CNIC/KYC \
 verification, bill payments).
 
-Reply in the same style and language mix as the user's ORIGINAL message below (Roman Urdu, \
-English, or code-switched) — do not switch to formal Urdu script, and do not switch to stiff \
-formal English if the user wrote casually. Match their tone.
+A LANGUAGE RULE below states which language to reply in, based on how the user wrote — \
+follow it strictly. Never use Urdu script. Match the user's tone: if they wrote casually, \
+stay casual; do not switch to stiff formal English.
 
 Ground your answer strictly in the FAQ CONTEXT provided. If the context does not contain \
 enough information to answer, say so honestly in the user's style and suggest escalating to a \
@@ -55,15 +58,39 @@ human agent — do not invent policy details, amounts, or timeframes that aren't
 Keep the reply concise, like a real chat support message, not an essay."""
 
 
+LANGUAGE_DIRECTIVES = {
+    "english": "LANGUAGE RULE: The user wrote entirely in English. Reply in English only — no Roman Urdu words or phrases.",
+    "roman_urdu": "LANGUAGE RULE: The user wrote in Roman Urdu. Reply in Roman Urdu (Latin script), keeping common English fintech terms (app, transaction, refund) where natural.",
+    "code_switched": "LANGUAGE RULE: The user mixed Roman Urdu and English. Reply in the same natural mix.",
+}
+
+
+def _parse_normalize_output(text: str) -> tuple[str, str]:
+    """Returns (normalized_query, language). Falls back gracefully if the
+    model ignores the two-line format."""
+    language = "code_switched"
+    normalized = text.strip()
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.upper().startswith("LANGUAGE:"):
+            candidate = stripped.split(":", 1)[1].strip().lower()
+            if candidate in LANGUAGE_DIRECTIVES:
+                language = candidate
+        elif stripped.upper().startswith("NORMALIZED:"):
+            normalized = stripped.split(":", 1)[1].strip()
+    return normalized, language
+
+
 @rate_limit_retry
-def normalize_query(chat_model: ChatGoogleGenerativeAI, raw_query: str) -> str:
+def normalize_query(chat_model: ChatGoogleGenerativeAI, raw_query: str) -> tuple[str, str]:
+    """Returns (normalized_query, language) in a single LLM call."""
     response = chat_model.invoke(
         [
             SystemMessage(content=NORMALIZE_SYSTEM_PROMPT),
             HumanMessage(content=raw_query),
         ]
     )
-    return response.text.strip()
+    return _parse_normalize_output(response.text)
 
 
 @rate_limit_retry
@@ -72,9 +99,15 @@ def retrieve_faqs(vectorstore: Chroma, normalized_query: str, k: int = 3) -> lis
 
 
 @rate_limit_retry
-def generate_reply(chat_model: ChatGoogleGenerativeAI, raw_query: str, faq_docs: list[Document]) -> str:
+def generate_reply(
+    chat_model: ChatGoogleGenerativeAI,
+    raw_query: str,
+    faq_docs: list[Document],
+    language: str = "code_switched",
+) -> str:
     context = "\n\n".join(doc.page_content for doc in faq_docs)
-    prompt = f"FAQ CONTEXT:\n{context}\n\nUSER'S ORIGINAL MESSAGE:\n{raw_query}"
+    directive = LANGUAGE_DIRECTIVES.get(language, LANGUAGE_DIRECTIVES["code_switched"])
+    prompt = f"FAQ CONTEXT:\n{context}\n\n{directive}\n\nUSER'S ORIGINAL MESSAGE:\n{raw_query}"
     response = chat_model.invoke(
         [
             SystemMessage(content=GENERATE_SYSTEM_PROMPT),
@@ -99,11 +132,12 @@ class KafiPipeline:
         )
 
     def run(self, raw_query: str, k: int = 3) -> dict:
-        normalized = normalize_query(self.chat_model, raw_query)
+        normalized, language = normalize_query(self.chat_model, raw_query)
         faq_docs = retrieve_faqs(self.vectorstore, normalized, k=k)
-        reply = generate_reply(self.chat_model, raw_query, faq_docs)
+        reply = generate_reply(self.chat_model, raw_query, faq_docs, language=language)
         return {
             "reply": reply,
             "normalized_query": normalized,
+            "detected_language": language,
             "retrieved_faq_ids": [doc.metadata["faq_id"] for doc in faq_docs],
         }

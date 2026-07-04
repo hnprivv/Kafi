@@ -69,9 +69,10 @@ def stratified_sample(df: pd.DataFrame, n: int, stratify_col: str = "intent") ->
 
 def score_row(pipeline: KafiPipeline, row: pd.Series, mode: str, limiter: RateLimiter | None, k: int = 3) -> dict:
     try:
+        language_detected = ""
         if mode == "full":
             limiter.acquire()
-            normalized = normalize_query(pipeline.chat_model, row["raw_query"])
+            normalized, language_detected = normalize_query(pipeline.chat_model, row["raw_query"])
         else:
             normalized = row["normalized_query_en"]
 
@@ -87,6 +88,7 @@ def score_row(pipeline: KafiPipeline, row: pd.Series, mode: str, limiter: RateLi
             "contains_typo": row["contains_typo"],
             "normalized_query_used": normalized,
             "normalized_query_ground_truth": row["normalized_query_en"],
+            "language_detected": language_detected,
             "retrieved_faq_ids": ";".join(retrieved_ids),
             "top1_correct": retrieved_ids[0] == row["faq_id"] if retrieved_ids else False,
             "top3_correct": row["faq_id"] in retrieved_ids,
@@ -102,6 +104,7 @@ def score_row(pipeline: KafiPipeline, row: pd.Series, mode: str, limiter: RateLi
             "contains_typo": row["contains_typo"],
             "normalized_query_used": "",
             "normalized_query_ground_truth": row["normalized_query_en"],
+            "language_detected": "",
             "retrieved_faq_ids": "",
             "top1_correct": False,
             "top3_correct": False,
@@ -155,6 +158,12 @@ def print_summary(df: pd.DataFrame) -> None:
     print("BY QUERY LANGUAGE")
     print("=" * 60)
     print(scored.groupby("query_language")[["top1_correct", "top3_correct", "category_correct"]].mean().round(3))
+
+    # Only populated in full mode, where the LLM classifies the language
+    # (used to mirror the user's language in the generated reply).
+    if (scored["language_detected"] != "").any():
+        detection_accuracy = (scored["language_detected"] == scored["query_language"]).mean()
+        print(f"\nLanguage detection accuracy vs ground truth: {detection_accuracy:.1%}")
 
     print("\n" + "=" * 60)
     print("BY TYPO FLAG")
