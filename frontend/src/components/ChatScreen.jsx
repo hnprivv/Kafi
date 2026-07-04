@@ -5,7 +5,7 @@ import InputBar from './InputBar'
 
 const WELCOME = {
   role: 'assistant',
-  text: "Assalam-o-Alaikum! \nI'm Kafi, Noor's support assistant. Ask me anything Noor related in English, Urdu, or a mix of both.\n\nMain 'Kafi' hoon, Noor ka assistant, aap apna koi bhi Noor se related sawal English, Urdu, ya dono mila kar likh sakte hain.",
+  text: "Greetings! \nI'm Kafi, Noor's support assistant. Ask me anything Noor related in English, Urdu, or a mix of both.\n\nAssalam-o-Alaikum!\nMain 'Kafi' hoon, Noor ka assistant, aap apna koi bhi Noor se related sawal English, Urdu, ya dono mila kar likh sakte hain.",
 }
 
 export default function ChatScreen() {

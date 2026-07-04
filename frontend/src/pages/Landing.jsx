@@ -9,10 +9,15 @@ const STATS = [
   { value: '24/7', label: 'support in your language' },
 ]
 
+// Bento layout: 6-col grid on lg — featured tiles span 4, small span 2,
+// bottom pair span 3 each (4+2 / 2+4 / 3+3).
 const FEATURES = [
   {
     title: 'Instant transfers on Raast',
     body: 'Send money to any bank account or wallet in Pakistan in seconds, free of charge. IBAN, Raast ID, ya sirf phone number, jo aap ke paas hai.',
+    stat: 'Zero fees',
+    featured: true,
+    span: 'lg:col-span-4',
     icon: (
       <path d="M4 12h13m0 0-4.5-4.5M17 12l-4.5 4.5M20 5v14" strokeLinecap="round" strokeLinejoin="round" />
     ),
@@ -20,6 +25,8 @@ const FEATURES = [
   {
     title: 'Bills, done in one tap',
     body: 'Electricity, gas, internet, school fees. Fetch the bill, check the amount, pay it. No queue, no photocopy of the challan.',
+    stat: 'One tap',
+    span: 'lg:col-span-2',
     icon: (
       <path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21V3Zm3 6h6M9 13h6" strokeLinecap="round" strokeLinejoin="round" />
     ),
@@ -27,13 +34,27 @@ const FEATURES = [
   {
     title: 'Mobile top-ups that stick',
     body: 'Jazz, Zong, Telenor, Ufone, load balance for yourself or anyone in your contacts. Failed top-ups auto-reverse within 48 hours.',
+    stat: '48h auto-reverse',
+    span: 'lg:col-span-2',
     icon: (
       <path d="M8 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm4 15h.01" strokeLinecap="round" strokeLinejoin="round" />
     ),
   },
   {
+    title: 'Fraud cover that responds',
+    body: 'Report a suspicious transaction from inside the app and the amount is held while we investigate. Helpline 0800-NOOR, around the clock.',
+    stat: '24/7 helpline',
+    featured: true,
+    span: 'lg:col-span-4',
+    icon: (
+      <path d="M12 3 5 6v5c0 4.5 3 8.2 7 10 4-1.8 7-5.5 7-10V6l-7-3Zm-2.5 9 2 2 3.5-4" strokeLinecap="round" strokeLinejoin="round" />
+    ),
+  },
+  {
     title: 'A card for the internet',
     body: 'A virtual debit card for online payments and subscriptions, with per-merchant limits and a freeze switch when something looks off.',
+    stat: 'Freeze anytime',
+    span: 'lg:col-span-3',
     icon: (
       <path d="M3 8h18M3 6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6Zm3 9h4" strokeLinecap="round" strokeLinejoin="round" />
     ),
@@ -41,15 +62,10 @@ const FEATURES = [
   {
     title: 'Open an account in minutes',
     body: 'CNIC, a selfie, and a few minutes. NADRA-verified onboarding without visiting a branch. NICOP holders overseas can register too.',
+    stat: 'Under 5 min',
+    span: 'lg:col-span-3',
     icon: (
       <path d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm4 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-3 3c.5-1.5 1.7-2 3-2s2.5.5 3 2m3-6h4m-4 3h4" strokeLinecap="round" strokeLinejoin="round" />
-    ),
-  },
-  {
-    title: 'Fraud cover that responds',
-    body: 'Report a suspicious transaction from inside the app and the amount is held while we investigate. Helpline 0800-NOOR, around the clock.',
-    icon: (
-      <path d="M12 3 5 6v5c0 4.5 3 8.2 7 10 4-1.8 7-5.5 7-10V6l-7-3Zm-2.5 9 2 2 3.5-4" strokeLinecap="round" strokeLinejoin="round" />
     ),
   },
 ]
@@ -60,21 +76,30 @@ const SUITE = [
     tagline: 'CV review, line by line',
     body: 'Started as our hiring team’s internal screener. RedPen reads a CV the way a reviewer does. Flags vague claims, weak phrasing, and missing evidence, and marks it up like a red pen would.',
     href: 'https://github.com/hnprivv/RedPen',
-    accent: 'bg-red-500',
+    demo: 'https://redpen-by-hn.streamlit.app',
+    icon: '/tools/redpen.png',
+    context: 'Hiring/Self-Assessment',
+    hoverAccent: 'hover:border-red-500/50',
   },
   {
     name: 'Lumen',
     tagline: 'Answers from your documents',
     body: 'Our internal knowledge base outgrew search. Lumen lets a team drop in their documents and ask questions in plain language, with answers grounded in the actual source pages.',
     href: 'https://github.com/hnprivv/Lumen',
-    accent: 'bg-amber-500',
+    demo: 'https://lumen-by-hn.streamlit.app',
+    icon: '/tools/lumen.png',
+    context: 'Knowledge base',
+    hoverAccent: 'hover:border-amber-500/50',
   },
   {
     name: 'Prism',
     tagline: 'Analytics without the SQL',
     body: 'Built so product managers could stop filing tickets for every chart. Prism takes a question in plain English, runs it against the data, and returns the table or chart that answers it.',
     href: 'https://github.com/hnprivv/Prism',
-    accent: 'bg-orange-600',
+    demo: 'https://prism-by-hn.streamlit.app',
+    icon: '/tools/prism.png',
+    context: 'Analytics',
+    hoverAccent: 'hover:border-orange-600/50',
   },
 ]
 
@@ -169,7 +194,7 @@ function PhoneMockup() {
             </span>
             <div className="leading-tight">
               <p className="text-sm font-medium text-white">Kafi</p>
-              <p className="text-[11px] text-emerald-200/60">Noor support &middot; online</p>
+              <p className="text-[11px] text-emerald-200/60">AI Assistant</p>
             </div>
           </div>
           <div className="space-y-2.5 px-3.5 py-4">
@@ -216,16 +241,48 @@ function Features() {
         <h2 className="mt-2 max-w-xl text-3xl font-semibold tracking-tight text-emerald-950">
           Everything a wallet should do, without the fine print games.
         </h2>
-        <div className="mt-12 grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
           {FEATURES.map((f) => (
-            <div key={f.title}>
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-950 text-gold-300">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-5 w-5">
-                  {f.icon}
-                </svg>
-              </span>
-              <h3 className="mt-4 text-base font-semibold text-emerald-950">{f.title}</h3>
-              <p className="mt-2 text-justify text-sm leading-relaxed text-stone-600">{f.body}</p>
+            <div
+              key={f.title}
+              className={`group rounded-2xl p-7 transition ${f.span} ${
+                f.featured
+                  ? 'bg-emerald-950 hover:shadow-xl hover:shadow-emerald-950/20'
+                  : 'border border-stone-200 bg-stone-50 hover:border-emerald-600/40 hover:shadow-lg hover:shadow-stone-200'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <span
+                  className={`flex h-12 w-12 items-center justify-center rounded-xl ${
+                    f.featured
+                      ? 'bg-emerald-800/60 text-gold-300 ring-1 ring-gold-400/40'
+                      : 'bg-emerald-950 text-gold-300'
+                  }`}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-6 w-6">
+                    {f.icon}
+                  </svg>
+                </span>
+                <span
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide uppercase ${
+                    f.featured
+                      ? 'text-gold-300 ring-1 ring-gold-400/40'
+                      : 'text-emerald-700 ring-1 ring-emerald-700/30'
+                  }`}
+                >
+                  {f.stat}
+                </span>
+              </div>
+              <h3 className={`mt-5 text-base font-semibold ${f.featured ? 'text-white' : 'text-emerald-950'}`}>
+                {f.title}
+              </h3>
+              <p
+                className={`mt-2 text-justify text-sm leading-relaxed ${
+                  f.featured ? 'max-w-md text-emerald-100/70' : 'text-stone-600'
+                }`}
+              >
+                {f.body}
+              </p>
             </div>
           ))}
         </div>
@@ -311,26 +368,46 @@ function Suite() {
         </p>
         <div className="mt-12 grid gap-6 md:grid-cols-3">
           {SUITE.map((tool) => (
-            <a
+            <div
               key={tool.name}
-              href={tool.href}
-              target="_blank"
-              rel="noreferrer"
-              className="group flex flex-col rounded-2xl border border-stone-200 bg-white p-6 transition hover:border-emerald-600/40 hover:shadow-lg hover:shadow-stone-200"
+              className={`flex flex-col rounded-2xl border border-stone-200 bg-white p-6 transition hover:shadow-lg hover:shadow-stone-200 ${tool.hoverAccent}`}
             >
               <div className="flex items-center gap-3">
-                <span className={`h-2.5 w-2.5 rounded-full ${tool.accent}`} />
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-200 bg-stone-50">
+                  <img src={tool.icon} alt="" className="h-6 w-6 object-contain" />
+                </span>
                 <h3 className="text-lg font-semibold text-emerald-950">{tool.name}</h3>
+                <span className="ml-auto rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide uppercase text-stone-500 ring-1 ring-stone-300">
+                  {tool.context}
+                </span>
               </div>
               <p className="mt-1 text-sm font-medium text-emerald-700">{tool.tagline}</p>
               <p className="mt-3 flex-1 text-justify text-sm leading-relaxed text-stone-600">{tool.body}</p>
-              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700 transition group-hover:text-emerald-600">
-                View on GitHub
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
-                  <path d="M7 17 17 7m0 0H9m8 0v8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </span>
-            </a>
+              <div className="mt-5 flex items-center justify-between">
+                <a
+                  href={tool.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700 transition hover:text-emerald-600"
+                >
+                  View on GitHub
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
+                    <path d="M7 17 17 7m0 0H9m8 0v8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </a>
+                <a
+                  href={tool.demo}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-emerald-950 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-emerald-800"
+                >
+                  Try it
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
+                    <path d="M7 17 17 7m0 0H9m8 0v8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </a>
+              </div>
+            </div>
           ))}
         </div>
       </div>

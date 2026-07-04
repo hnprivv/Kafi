@@ -19,8 +19,8 @@ export default function Header() {
         </svg>
       </Link>
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-800 ring-1 ring-gold-400/40">
-        <span className="font-naskh text-lg text-gold-300" dir="rtl">
-          کا
+        <span className="font-naskh text-sm text-gold-300" dir="rtl">
+          کافی
         </span>
       </div>
       <div className="flex flex-col leading-tight">
@@ -28,12 +28,8 @@ export default function Header() {
           Kafi
         </span>
         <span className="text-xs text-emerald-200/70">
-          Noor Assistant
+          AI Assistant
         </span>
-      </div>
-      <div className="ml-auto flex items-center gap-1.5 text-xs text-emerald-200/70">
-        <span className="h-2 w-2 rounded-full bg-gold-400" />
-        Online
       </div>
     </header>
   )
