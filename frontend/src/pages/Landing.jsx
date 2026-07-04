@@ -614,7 +614,7 @@ function Footer() {
           <p className="max-w-2xl text-justify">
             Noor is a fictional fintech company created for a portfolio project. It is not
             a real financial service, and nothing on this page is a real product, licence,
-            or offer.
+            or offer, except for RedPen, Lumen, Prism & Kafi.
           </p>
           <div className="mt-2 flex items-center gap-4">
             <p>&copy; 2026 Noor Digital (Pvt.) Ltd.</p>
