@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 /* ---------------------------------- data ---------------------------------- */
@@ -51,21 +52,21 @@ const FEATURES = [
     ),
   },
   {
-    title: 'A card for the internet',
-    body: 'A virtual debit card for online payments and subscriptions, with per-merchant limits and a freeze switch when something looks off.',
-    stat: 'Freeze anytime',
-    span: 'lg:col-span-3',
-    icon: (
-      <path d="M3 8h18M3 6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6Zm3 9h4" strokeLinecap="round" strokeLinejoin="round" />
-    ),
-  },
-  {
     title: 'Open an account in minutes',
     body: 'CNIC, a selfie, and a few minutes. NADRA-verified onboarding without visiting a branch. NICOP holders overseas can register too.',
     stat: 'Under 5 min',
     span: 'lg:col-span-3',
     icon: (
       <path d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm4 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-3 3c.5-1.5 1.7-2 3-2s2.5.5 3 2m3-6h4m-4 3h4" strokeLinecap="round" strokeLinejoin="round" />
+    ),
+  },
+  {
+    title: 'A card for the internet',
+    body: 'A virtual debit card for online payments and subscriptions, with per-merchant limits and a freeze switch when something looks off.',
+    stat: 'Freeze anytime',
+    span: 'lg:col-span-3',
+    icon: (
+      <path d="M3 8h18M3 6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6Zm3 9h4" strokeLinecap="round" strokeLinejoin="round" />
     ),
   },
 ]
@@ -132,7 +133,7 @@ function Nav() {
           <a href="#suite" className="transition hover:text-gold-300">Open source</a>
         </div>
         <Link
-          to="/chat"
+          to="/chat" viewTransition
           className="ml-auto rounded-full bg-gold-400 px-4 py-2 text-sm font-medium text-emerald-950 transition hover:bg-gold-300"
         >
           Talk to Kafi
@@ -164,7 +165,7 @@ function Hero() {
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
-              to="/chat"
+              to="/chat" viewTransition
               className="rounded-full bg-gold-400 px-6 py-3 text-sm font-medium text-emerald-950 transition hover:bg-gold-300"
             >
               Chat with Kafi
@@ -184,8 +185,27 @@ function Hero() {
 }
 
 function PhoneMockup() {
+  const ref = useRef(null)
+  const [inView, setInView] = useState(false)
+
+  // The shared view-transition name is only attached while the mockup is
+  // on screen: clicking "chat" then morphs the mockup into the real chat
+  // screen. Off screen, the name is absent and navigation falls back to
+  // the default cross-fade.
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), {
+      threshold: 0.4,
+    })
+    observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [])
+
   return (
-    <div className="mx-auto w-full max-w-[340px]">
+    <div
+      ref={ref}
+      style={{ viewTransitionName: inView ? 'kafi-chat' : 'none' }}
+      className="mx-auto w-full max-w-[340px]"
+    >
       <div className="rounded-[2rem] border border-emerald-700/60 bg-emerald-900 p-2 shadow-2xl shadow-black/50">
         <div className="overflow-hidden rounded-[1.6rem] bg-emerald-950">
           <div className="flex items-center gap-2.5 border-b border-emerald-800/60 px-4 py-3">
@@ -233,6 +253,149 @@ function Stats() {
   )
 }
 
+function NoorCard() {
+  const anchorRef = useRef(null)
+  const cardRef = useRef(null)
+
+  // Scroll-linked: the card grows in as it rises from the Kafi section's edge,
+  // rests at full size mid-viewport, then slides up behind the feature tiles
+  // (they sit at z-10, this wrapper at z-0) as the user scrolls on.
+  // The target is derived from the untransformed anchor, and the applied
+  // values ease toward it each frame so wheel steps don't snap.
+  useEffect(() => {
+    const anchor = anchorRef.current
+    const card = cardRef.current
+    let raf = 0
+    let running = false
+    const current = { y: 90, scale: 0.55, opacity: 0 }
+
+    const computeTarget = () => {
+      const rect = anchor.getBoundingClientRect()
+      const progress = Math.min(1, Math.max(0, (window.innerHeight - rect.top) / (window.innerHeight + rect.height)))
+
+      if (progress < 0.35) {
+        const t = progress / 0.35
+        return { y: 90 * (1 - t), scale: 0.55 + 0.45 * t, opacity: Math.min(1, t * 1.6) }
+      }
+      if (progress > 0.6) {
+        const t = (progress - 0.6) / 0.4
+        return { y: -170 * t, scale: 1, opacity: 1 - t }
+      }
+      return { y: 0, scale: 1, opacity: 1 }
+    }
+
+    const step = () => {
+      const target = computeTarget()
+      let settled = true
+      for (const key of ['y', 'scale', 'opacity']) {
+        const delta = target[key] - current[key]
+        if (Math.abs(delta) > 0.002) settled = false
+        current[key] += delta * 0.12
+      }
+      card.style.transform = `translateY(${current.y}px) scale(${current.scale})`
+      card.style.opacity = current.opacity
+
+      if (settled) {
+        running = false
+      } else {
+        raf = requestAnimationFrame(step)
+      }
+    }
+
+    const kick = () => {
+      if (!running) {
+        running = true
+        raf = requestAnimationFrame(step)
+      }
+    }
+    kick()
+    window.addEventListener('scroll', kick, { passive: true })
+    window.addEventListener('resize', kick)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', kick)
+      window.removeEventListener('resize', kick)
+    }
+  }, [])
+
+  // Tilt toward the cursor, as if that corner of the card is pressed down.
+  // Inline transform overrides the CSS hover lift while tracking; clearing
+  // it on leave hands the reset back to the stylesheet transition.
+  const handleTiltMove = (e) => {
+    const el = e.currentTarget
+    const rect = el.getBoundingClientRect()
+    const px = (e.clientX - rect.left) / rect.width - 0.5
+    const py = (e.clientY - rect.top) / rect.height - 0.5
+    el.style.transition = 'transform 100ms ease-out, box-shadow 300ms ease'
+    el.style.transform = `perspective(700px) rotateX(${(-py * 10).toFixed(2)}deg) rotateY(${(px * 12).toFixed(2)}deg)`
+  }
+
+  const handleTiltLeave = (e) => {
+    const el = e.currentTarget
+    el.style.transition = ''
+    el.style.transform = ''
+  }
+
+  return (
+    <div ref={anchorRef} className="relative z-0 mx-auto mt-14 w-full max-w-3xl">
+      <div ref={cardRef}>
+        <div className="flex items-center justify-center gap-8">
+        {/* Spec annotations — desktop only, mobile keeps just the card */}
+        <div className="hidden flex-1 flex-col gap-16 lg:flex">
+          <div className="flex items-center justify-end gap-3">
+            <p className="max-w-[200px] text-right text-xs leading-relaxed text-stone-500">
+              Freeze and unfreeze it from the app, instantly
+            </p>
+            <span className="h-px w-12 bg-stone-300" />
+          </div>
+          <div className="flex items-center justify-end gap-3">
+            <p className="max-w-[200px] text-right text-xs leading-relaxed text-stone-500">
+              No printed number &mdash; nothing to skim, nothing to lose
+            </p>
+            <span className="h-px w-12 bg-stone-300" />
+          </div>
+        </div>
+        <div
+          onMouseMove={handleTiltMove}
+          onMouseLeave={handleTiltLeave}
+          className="noor-card relative flex aspect-[7/10] w-[220px] shrink-0 flex-col overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-800 via-emerald-900 to-emerald-950 p-5 shadow-xl shadow-emerald-950/30 ring-1 ring-gold-400/30 hover:shadow-2xl hover:shadow-emerald-950/50"
+        >
+        <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(115deg,transparent_0px,transparent_11px,rgba(246,218,158,0.025)_11px,rgba(246,218,158,0.025)_12px)]" />
+        <div className="pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full bg-gold-400/10 blur-2xl" />
+        <div className="flex items-start justify-between">
+          <img src="/noor.svg" alt="" className="h-8 w-8" />
+          <span className="text-[10px] font-semibold tracking-widest text-emerald-100/60 uppercase">
+            Virtual
+          </span>
+        </div>
+        <p className="mt-auto text-sm font-semibold tracking-widest text-white uppercase">
+          Huzaifa Najam
+        </p>
+        <div className="mt-10 flex items-end justify-between">
+          <span className="font-mono text-sm tracking-[0.15em] text-emerald-100/80">4291</span>
+          <span className="text-sm font-bold tracking-tight text-white italic">PayPak</span>
+        </div>
+        </div>
+        <div className="hidden flex-1 flex-col gap-16 lg:flex">
+          <div className="flex items-center gap-3">
+            <span className="h-px w-12 bg-stone-300" />
+            <p className="max-w-[200px] text-xs leading-relaxed text-stone-500">
+              Issued the moment your account opens
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="h-px w-12 bg-stone-300" />
+            <p className="max-w-[200px] text-xs leading-relaxed text-stone-500">
+              Accepted at every PayPak merchant online
+            </p>
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function Features() {
   return (
     <section id="features" className="scroll-mt-16 bg-white">
@@ -241,7 +404,7 @@ function Features() {
         <h2 className="mt-2 max-w-xl text-3xl font-semibold tracking-tight text-emerald-950">
           Everything a wallet should do, without the fine print games.
         </h2>
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+        <div className="relative z-10 mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
           {FEATURES.map((f) => (
             <div
               key={f.title}
@@ -286,6 +449,7 @@ function Features() {
             </div>
           ))}
         </div>
+        <NoorCard />
       </div>
     </section>
   )
@@ -293,7 +457,7 @@ function Features() {
 
 function KafiSection() {
   return (
-    <section id="kafi" className="scroll-mt-16 bg-emerald-950">
+    <section id="kafi" className="relative z-10 scroll-mt-16 bg-emerald-950">
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-20 lg:grid-cols-2">
         <div>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white">
@@ -320,7 +484,7 @@ function KafiSection() {
             ))}
           </ul>
           <Link
-            to="/chat"
+            to="/chat" viewTransition
             className="mt-8 inline-block rounded-full bg-gold-400 px-6 py-3 text-sm font-medium text-emerald-950 transition hover:bg-gold-300"
           >
             Ask Kafi something
@@ -440,7 +604,7 @@ function Footer() {
             </div>
             <div className="space-y-2.5">
               <p className="font-medium text-emerald-100/80">Support</p>
-              <Link to="/chat" className="block text-emerald-100/50 transition hover:text-gold-300">Chat with Kafi</Link>
+              <Link to="/chat" viewTransition className="block text-emerald-100/50 transition hover:text-gold-300">Chat with Kafi</Link>
               <a href="#kafi" className="block text-emerald-100/50 transition hover:text-gold-300">Help centre</a>
               <a href="#top" className="block text-emerald-100/50 transition hover:text-gold-300">Report fraud</a>
             </div>
@@ -452,7 +616,15 @@ function Footer() {
             a real financial service, and nothing on this page is a real product, licence,
             or offer.
           </p>
-          <p className="mt-2">&copy; 2026 Noor Digital (Pvt.) Ltd.</p>
+          <div className="mt-2 flex items-center gap-4">
+            <p>&copy; 2026 Noor Digital (Pvt.) Ltd.</p>
+            <Link to="/privacy" viewTransition className="transition hover:text-gold-300">
+              Privacy
+            </Link>
+            <Link to="/privacy#terms" viewTransition className="transition hover:text-gold-300">
+              Terms
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

@@ -5,6 +5,7 @@ export default function Header() {
     <header className="flex items-center gap-3 bg-emerald-900 px-4 py-3 shadow-md shadow-black/20">
       <Link
         to="/"
+        viewTransition
         aria-label="Back to Noor home"
         className="-ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-emerald-200/70 transition hover:bg-emerald-800 hover:text-gold-300"
       >

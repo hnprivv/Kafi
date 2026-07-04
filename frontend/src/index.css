@@ -28,6 +28,42 @@ body {
   background-color: var(--color-emerald-950);
 }
 
+/* Landing → chat route transition: the hero phone mockup morphs into the
+   real chat screen (shared view-transition-name "kafi-chat"); other
+   navigations get the browser's default cross-fade. */
+::view-transition-group(kafi-chat) {
+  animation-duration: 350ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Virtual card hover: lift + tilt (direction set per card via --card-tilt)
+   with a one-way sheen sweep across the face */
+.noor-card {
+  transition: transform 300ms ease, box-shadow 300ms ease;
+}
+
+.noor-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.12) 50%,
+    transparent 60%
+  );
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+
+/* The cursor-tracking tilt is applied as an inline transform from JS
+   while the pointer moves over the card. */
+
+.noor-card:hover::after {
+  transform: translateX(130%);
+  transition: transform 700ms ease;
+}
+
 /* Subtle theme-matched scrollbar for the chat message list */
 .chat-scroll {
   scrollbar-width: thin;
