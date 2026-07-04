@@ -43,7 +43,7 @@ export default function ChatScreen() {
   return (
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-emerald-950 sm:h-[85vh] sm:max-w-sm sm:rounded-3xl sm:shadow-2xl sm:shadow-black/40 sm:ring-1 sm:ring-emerald-800">
       <Header />
-      <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+      <div ref={scrollRef} className="chat-scroll flex-1 space-y-3 overflow-y-auto px-4 py-4">
         {messages.map((m, i) => (
           <MessageBubble key={i} role={m.role} text={m.text} />
         ))}

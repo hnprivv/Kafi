@@ -24,11 +24,11 @@ export default function Header() {
         </span>
       </div>
       <div className="flex flex-col leading-tight">
-        <span className="font-naskh text-xl text-gold-300" dir="rtl">
-          کافی
+        <span className="text-lg font-semibold tracking-tight text-gold-300">
+          Kafi
         </span>
         <span className="text-xs text-emerald-200/70">
-          Kafi &middot; Noor Assistant
+          Noor Assistant
         </span>
       </div>
       <div className="ml-auto flex items-center gap-1.5 text-xs text-emerald-200/70">
