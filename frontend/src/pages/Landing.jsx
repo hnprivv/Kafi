@@ -12,21 +12,21 @@ const STATS = [
 const FEATURES = [
   {
     title: 'Instant transfers on Raast',
-    body: 'Send money to any bank account or wallet in Pakistan in seconds, free of charge. IBAN, Raast ID, ya sirf phone number — jo aap ke paas hai.',
+    body: 'Send money to any bank account or wallet in Pakistan in seconds, free of charge. IBAN, Raast ID, ya sirf phone number, jo aap ke paas hai.',
     icon: (
       <path d="M4 12h13m0 0-4.5-4.5M17 12l-4.5 4.5M20 5v14" strokeLinecap="round" strokeLinejoin="round" />
     ),
   },
   {
     title: 'Bills, done in one tap',
-    body: 'Electricity, gas, internet, school fees — fetch the bill, check the amount, pay it. No queue, no photocopy of the challan.',
+    body: 'Electricity, gas, internet, school fees. Fetch the bill, check the amount, pay it. No queue, no photocopy of the challan.',
     icon: (
       <path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21V3Zm3 6h6M9 13h6" strokeLinecap="round" strokeLinejoin="round" />
     ),
   },
   {
     title: 'Mobile top-ups that stick',
-    body: 'Jazz, Zong, Telenor, Ufone — load balance for yourself or anyone in your contacts. Failed top-ups auto-reverse within 48 hours.',
+    body: 'Jazz, Zong, Telenor, Ufone, load balance for yourself or anyone in your contacts. Failed top-ups auto-reverse within 48 hours.',
     icon: (
       <path d="M8 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm4 15h.01" strokeLinecap="round" strokeLinejoin="round" />
     ),
@@ -40,7 +40,7 @@ const FEATURES = [
   },
   {
     title: 'Open an account in minutes',
-    body: 'CNIC, a selfie, and a few minutes — NADRA-verified onboarding without visiting a branch. NICOP holders overseas can register too.',
+    body: 'CNIC, a selfie, and a few minutes. NADRA-verified onboarding without visiting a branch. NICOP holders overseas can register too.',
     icon: (
       <path d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm4 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-3 3c.5-1.5 1.7-2 3-2s2.5.5 3 2m3-6h4m-4 3h4" strokeLinecap="round" strokeLinejoin="round" />
     ),
@@ -58,7 +58,7 @@ const SUITE = [
   {
     name: 'RedPen',
     tagline: 'CV review, line by line',
-    body: 'Started as our hiring team’s internal screener. RedPen reads a CV the way a reviewer does — flagging vague claims, weak phrasing, and missing evidence — and marks it up like a red pen would.',
+    body: 'Started as our hiring team’s internal screener. RedPen reads a CV the way a reviewer does. Flags vague claims, weak phrasing, and missing evidence, and marks it up like a red pen would.',
     href: 'https://github.com/hnprivv/RedPen',
     accent: 'bg-red-500',
   },
@@ -82,12 +82,12 @@ const KAFI_DEMO = [
   { role: 'user', text: 'yaar mera JazzCash top-up fail ho gaya lekin paise kat gaye' },
   {
     role: 'assistant',
-    text: 'Fikar na karein — failed top-up ki raqam 24 se 48 ghantay mein automatically reverse ho jati hai. Agar 48 ghantay ke baad bhi wapas na aaye, to app se transaction report kar dein, hum foran check karenge.',
+    text: 'Fikar na karein! Failed top-up ki raqam 24 se 48 ghantay mein automatically reverse ho jati hai. Agar 48 ghantay ke baad bhi wapas na aaye, to app se transaction report kar dein, hum foran check karenge.',
   },
   { role: 'user', text: 'ok aur agar dobara try karun abhi?' },
   {
     role: 'assistant',
-    text: 'Ji bilkul, dobara try kar sakte hain — pehli wali amount alag se wapas aa jayegi, dono mix nahi hongi.',
+    text: 'Ji bilkul, dobara try kar sakte hain. Pehli wali amount alag se wapas aa jayegi, dono mix nahi hongi.',
   },
 ]
 
@@ -98,11 +98,7 @@ function Nav() {
     <nav className="sticky top-0 z-20 border-b border-emerald-800/60 bg-emerald-950/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center gap-8 px-5 py-3.5">
         <a href="#top" className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-800 ring-1 ring-gold-400/40">
-            <span className="font-naskh text-lg leading-none text-gold-300" dir="rtl">
-              ن
-            </span>
-          </span>
+          <img src="/noor.svg" alt="" className="h-9 w-9" />
           <span className="text-lg font-semibold tracking-tight text-white">Noor</span>
         </a>
         <div className="hidden items-center gap-6 text-sm text-emerald-100/70 sm:flex">
@@ -136,8 +132,8 @@ function Hero() {
             <br />
             <span className="text-gold-300">in your own words.</span>
           </h1>
-          <p className="mt-5 max-w-lg text-base leading-relaxed text-emerald-100/70">
-            Noor is a mobile wallet for Pakistan — transfers, bills, and top-ups in one
+          <p className="mt-5 max-w-lg text-justify text-base leading-relaxed text-emerald-100/70">
+            Noor is a mobile wallet for Pakistan. Transfers, bills, and top-ups in one
             app, with support that understands you whether you write in English, Urdu,
             or the mix you actually speak.
           </p>
@@ -169,7 +165,7 @@ function PhoneMockup() {
         <div className="overflow-hidden rounded-[1.6rem] bg-emerald-950">
           <div className="flex items-center gap-2.5 border-b border-emerald-800/60 px-4 py-3">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-800 ring-1 ring-gold-400/40">
-              <span className="font-naskh text-sm text-gold-300" dir="rtl">کا</span>
+              <span className="font-naskh text-sm text-gold-300" dir="rtl">کافی</span>
             </span>
             <div className="leading-tight">
               <p className="text-sm font-medium text-white">Kafi</p>
@@ -229,7 +225,7 @@ function Features() {
                 </svg>
               </span>
               <h3 className="mt-4 text-base font-semibold text-emerald-950">{f.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-stone-600">{f.body}</p>
+              <p className="mt-2 text-justify text-sm leading-relaxed text-stone-600">{f.body}</p>
             </div>
           ))}
         </div>
@@ -243,21 +239,18 @@ function KafiSection() {
     <section id="kafi" className="scroll-mt-16 bg-emerald-950">
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-20 lg:grid-cols-2">
         <div>
-          <p className="font-nastaliq text-3xl leading-loose text-gold-300" dir="rtl">
-            کافی
-          </p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white">
             Meet Kafi, support that speaks like you do.
           </h2>
-          <p className="mt-4 max-w-lg text-base leading-relaxed text-emerald-100/70">
+          <p className="mt-4 max-w-lg text-justify text-base leading-relaxed text-emerald-100/70">
             Most support bots force you to pick a language. Kafi doesn&apos;t. Write
             &ldquo;mera top-up fail ho gaya, refund kab milega?&rdquo; and it answers in
-            the same mix of Urdu and English — grounded in Noor&apos;s actual policies,
+            the same mix of Urdu and English, grounded in Noor&apos;s actual policies,
             not guesswork.
           </p>
           <ul className="mt-6 space-y-3 text-sm text-emerald-100/80">
             {[
-              'Understands Roman Urdu, English, and everything in between — typos included.',
+              'Understands Roman Urdu, English, and everything in between (typos included).',
               'Answers come from Noor’s real help articles, so amounts and timeframes are accurate.',
               'Hands you to a human agent when a question needs one, instead of going in circles.',
             ].map((item) => (
@@ -284,7 +277,7 @@ function KafiSection() {
             {[
               ['You write naturally', '“refund kaise milega bhai” works just as well as a formal sentence.'],
               ['Kafi finds the right policy', 'Your question is matched against Noor’s help centre, not answered from thin air.'],
-              ['You get a straight answer', 'In your own style — with the exact steps, amounts, and timeframes that apply.'],
+              ['You get a straight answer', 'In your own style, with the exact steps, amounts, and timeframes that apply.'],
             ].map(([title, body], i) => (
               <li key={title} className="flex gap-4">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-800 text-xs font-semibold text-gold-300 ring-1 ring-gold-400/30">
@@ -292,7 +285,7 @@ function KafiSection() {
                 </span>
                 <div>
                   <p className="text-sm font-medium text-white">{title}</p>
-                  <p className="mt-1 text-sm leading-relaxed text-emerald-100/60">{body}</p>
+                  <p className="mt-1 text-justify text-sm leading-relaxed text-emerald-100/60">{body}</p>
                 </div>
               </li>
             ))}
@@ -311,8 +304,8 @@ function Suite() {
         <h2 className="mt-2 max-w-xl text-3xl font-semibold tracking-tight text-emerald-950">
           Tools we built for ourselves, released as open source.
         </h2>
-        <p className="mt-4 max-w-2xl text-base leading-relaxed text-stone-600">
-          Kafi wasn&apos;t our first internal tool — it&apos;s the fourth. The first three
+        <p className="mt-4 max-w-2xl text-justify text-base leading-relaxed text-stone-600">
+          Kafi wasn&apos;t our first internal tool, it&apos;s the fourth. The first three
           started as fixes for our own hiring, documentation, and analytics headaches,
           and are now public on GitHub.
         </p>
@@ -330,7 +323,7 @@ function Suite() {
                 <h3 className="text-lg font-semibold text-emerald-950">{tool.name}</h3>
               </div>
               <p className="mt-1 text-sm font-medium text-emerald-700">{tool.tagline}</p>
-              <p className="mt-3 flex-1 text-sm leading-relaxed text-stone-600">{tool.body}</p>
+              <p className="mt-3 flex-1 text-justify text-sm leading-relaxed text-stone-600">{tool.body}</p>
               <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700 transition group-hover:text-emerald-600">
                 View on GitHub
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
@@ -352,9 +345,7 @@ function Footer() {
         <div className="flex flex-col justify-between gap-8 sm:flex-row">
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-800 ring-1 ring-gold-400/40">
-                <span className="font-naskh text-base leading-none text-gold-300" dir="rtl">ن</span>
-              </span>
+              <img src="/noor.svg" alt="" className="h-8 w-8" />
               <span className="font-semibold text-white">Noor</span>
             </div>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-emerald-100/50">
@@ -379,7 +370,7 @@ function Footer() {
           </div>
         </div>
         <div className="mt-10 border-t border-emerald-800/60 pt-6 text-xs leading-relaxed text-emerald-100/40">
-          <p>
+          <p className="max-w-2xl text-justify">
             Noor is a fictional fintech company created for a portfolio project. It is not
             a real financial service, and nothing on this page is a real product, licence,
             or offer.
