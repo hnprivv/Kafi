@@ -6,7 +6,7 @@ The name comes from the Sufi poetic form (Bulleh Shah, Shah Hussain) — poetry 
 
 **Live demo:** [noor on Vercel](https://kafi.vercel.app) · Frontend: React + Tailwind on Vercel · Backend: FastAPI on Render
 
-![Kafi demo](/frontend/public/kafi-demo.gif)
+![Kafi demo](frontend/kafi-demo.gif)
 
 ## The problem
 
@@ -18,7 +18,9 @@ A two-step pipeline, because direct multilingual embedding retrieval proved too 
 
 1. **Normalize + classify** (one LLM call): the raw message is rewritten as a clean English search query, and classified by language (`english` / `roman_urdu` / `code_switched` / `urdu_script`) and type (`question` / `smalltalk`). Two deterministic guards then override the LLM where it can be wrong: any Arabic-script character forces `urdu_script`, and a Latin message containing zero Roman-Urdu marker words is English — typos can make English look strange, but they can't inject Urdu vocabulary.
 2. **Retrieve**: the normalized English query is searched against the FAQ knowledge base in ChromaDB using local embeddings. Small talk ("ok, will try") skips retrieval entirely — similarity search always returns *something*, and stray FAQ context tempts the model into volunteering topics the user never asked about.
-3. **Generate**: the reply is grounded strictly in the retrieved FAQs and mirrors the user's language via a hard directive — a fully-English user gets fully-English answers, Urdu script gets Urdu script. The pipeline is stateless: no history, no session storage.
+3. **Generate**: the reply is grounded strictly in the retrieved FAQs and mirrors the user's language via a hard directive — a fully-English user gets fully-English answers, Urdu script gets Urdu script.
+
+Conversation memory is a **short rolling context**: the client sends the last few turns with each request, so follow-ups ("aur agar phir bhi fail ho?") normalize into self-contained queries that retrieval can use. The server stores nothing — no sessions, no database; a page refresh starts a clean slate.
 
 ## Measured, not eyeballed
 
@@ -43,6 +45,11 @@ A detail worth noting: retrieval originally used Gemini's embedding API, whose f
 - **Synthetic data** — ~100-row FAQ knowledge base + 1,000+ query stress-test set, LLM-generated in batches and linked by ground-truth FAQ IDs
 
 ## Running locally
+
+```bash
+git clone https://github.com/hnprivv/Kafi
+cd Kafi
+```
 
 Backend (Python 3.13):
 
@@ -89,8 +96,8 @@ python -m app.eval --mode full --sample 250   # real pipeline incl. LLM normaliz
 
 ## What I'd build next
 
-- **Conversation history** — the pipeline is deliberately stateless; short rolling context would enable follow-up questions ("aur agar phir bhi fail ho?").
 - **Streaming replies** (SSE) — perceived latency is the weakest part of the demo experience.
+- **Persistent conversations** — memory is a client-held rolling window of the last few turns; server-side sessions would let a conversation survive a refresh or continue across devices.
 - **Retrieval confidence threshold** — top-k always returns something; a similarity floor would let Kafi say "I'm not sure" before generation, not after.
 - **Weak-category repair** — `account_verification` sits at 80% top-1 because its FAQs are semantically close to each other; splitting or rewriting them is data work the eval harness can verify directly.
 - **Human handoff** — Kafi already offers escalation in-conversation; wiring it to a real ticket/queue is the missing production piece.

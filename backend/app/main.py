@@ -8,8 +8,14 @@ app = FastAPI(title="Kafi API")
 _pipeline = KafiPipeline()
 
 
+class ChatTurn(BaseModel):
+    role: str  # "user" | "assistant"
+    text: str
+
+
 class ChatRequest(BaseModel):
     message: str
+    history: list[ChatTurn] = []
 
 
 class DebugRetrieveRequest(BaseModel):
@@ -24,7 +30,8 @@ def health():
 
 @app.post("/chat")
 def chat(request: ChatRequest):
-    return _pipeline.run(request.message)
+    history = [turn.model_dump() for turn in request.history]
+    return _pipeline.run(request.message, history=history)
 
 
 @app.post("/debug/retrieve")

@@ -1,13 +1,11 @@
-import { Link } from 'react-router-dom'
-
-export default function Header() {
+export default function Header({ onBack }) {
   return (
     <header className="flex items-center gap-3 bg-emerald-900 px-4 py-3 shadow-md shadow-black/20">
-      <Link
-        to="/"
-        viewTransition
+      <button
+        type="button"
+        onClick={onBack}
         aria-label="Back to Noor home"
-        className="-ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-emerald-200/70 transition hover:bg-emerald-800 hover:text-gold-300"
+        className="-ml-1 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-emerald-200/70 transition hover:bg-emerald-800 hover:text-gold-300"
       >
         <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
           <path
@@ -18,7 +16,7 @@ export default function Header() {
             strokeLinejoin="round"
           />
         </svg>
-      </Link>
+      </button>
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-800 ring-1 ring-gold-400/40">
         <span className="font-naskh text-sm text-gold-300" dir="rtl">
           کافی

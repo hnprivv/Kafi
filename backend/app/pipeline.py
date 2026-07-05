@@ -38,6 +38,11 @@ support system. The user message may be in Roman Urdu, English, a code-switched 
 both, or Urdu written in Urdu (Arabic) script, and may contain typos or inconsistent \
 transliteration spelling.
 
+A CONVERSATION SO FAR section may be included. Use it only to resolve pronouns and \
+references so the NORMALIZED line is self-contained (e.g. "aur agar phir bhi fail ho?" \
+after a top-up discussion becomes "What if my top-up still fails after retrying?"). \
+Classify LANGUAGE and TYPE from the LATEST USER MESSAGE alone.
+
 Return exactly three lines, no explanation, quotes, or preamble:
 LANGUAGE: classify the user's message as one of: english | roman_urdu | code_switched | \
 urdu_script. Use "english" only if the message is entirely English. Use "roman_urdu" if it \
@@ -66,6 +71,10 @@ human agent — do not invent policy details, amounts, or timeframes that aren't
 Only use the parts of the context that answer what the user actually asked. Never volunteer, \
 mention, or hint at other support topics from the context that the user did not raise.
 
+A CONVERSATION SO FAR section may be included — use it to answer follow-ups naturally and \
+stay consistent with what was already said, but ground every fact in the FAQ CONTEXT, never \
+in memory alone.
+
 Keep the reply concise, like a real chat support message, not an essay."""
 
 
@@ -75,6 +84,21 @@ LANGUAGE_DIRECTIVES = {
     "code_switched": "LANGUAGE RULE: The user mixed Roman Urdu and English. Reply in the same natural mix. Do not use Urdu (Arabic) script.",
     "urdu_script": "LANGUAGE RULE: The user wrote in Urdu script. Reply in proper Urdu script (اردو), warm and clear — not overly formal or literary.",
 }
+
+
+# Rolling context window: the client sends recent turns with each request;
+# anything beyond this many messages is dropped server-side as well.
+HISTORY_MAX_MESSAGES = 8
+
+
+def _format_history(history: list[dict] | None) -> str:
+    if not history:
+        return ""
+    lines = []
+    for turn in history[-HISTORY_MAX_MESSAGES:]:
+        speaker = "User" if turn.get("role") == "user" else "Kafi"
+        lines.append(f"{speaker}: {turn.get('text', '')}")
+    return "\n".join(lines)
 
 
 # Common Roman Urdu function/content words that rarely occur in English text.
@@ -134,12 +158,20 @@ def _parse_normalize_output(text: str) -> tuple[str, str, str]:
 
 
 @rate_limit_retry
-def normalize_query(chat_model: ChatGoogleGenerativeAI, raw_query: str) -> tuple[str, str, str]:
+def normalize_query(
+    chat_model: ChatGoogleGenerativeAI,
+    raw_query: str,
+    history: list[dict] | None = None,
+) -> tuple[str, str, str]:
     """Returns (normalized_query, language, message_type) in a single LLM call."""
+    content = raw_query
+    history_block = _format_history(history)
+    if history_block:
+        content = f"CONVERSATION SO FAR:\n{history_block}\n\nLATEST USER MESSAGE:\n{raw_query}"
     response = chat_model.invoke(
         [
             SystemMessage(content=NORMALIZE_SYSTEM_PROMPT),
-            HumanMessage(content=raw_query),
+            HumanMessage(content=content),
         ]
     )
     normalized, language, message_type = _parse_normalize_output(response.text)
@@ -157,6 +189,7 @@ def generate_reply(
     raw_query: str,
     faq_docs: list[Document],
     language: str = "code_switched",
+    history: list[dict] | None = None,
 ) -> str:
     if faq_docs:
         context = "\n\n".join(doc.page_content for doc in faq_docs)
@@ -166,11 +199,13 @@ def generate_reply(
         context = (
             "(none — the user's message is a greeting, thanks, acknowledgement, or "
             "goodbye, not a support question. Reply with a brief, friendly "
-            "acknowledgement in their language. Do not introduce, mention, or hint "
-            "at any support topic.)"
+            "acknowledgement in their language. You may acknowledge a topic already "
+            "discussed in the conversation, but do not introduce any new support topic.)"
         )
     directive = LANGUAGE_DIRECTIVES.get(language, LANGUAGE_DIRECTIVES["code_switched"])
-    prompt = f"FAQ CONTEXT:\n{context}\n\n{directive}\n\nUSER'S ORIGINAL MESSAGE:\n{raw_query}"
+    history_block = _format_history(history)
+    history_section = f"CONVERSATION SO FAR:\n{history_block}\n\n" if history_block else ""
+    prompt = f"{history_section}FAQ CONTEXT:\n{context}\n\n{directive}\n\nUSER'S LATEST MESSAGE:\n{raw_query}"
     response = chat_model.invoke(
         [
             SystemMessage(content=GENERATE_SYSTEM_PROMPT),
@@ -194,15 +229,15 @@ class KafiPipeline:
             persist_directory=settings.chroma_persist_dir,
         )
 
-    def run(self, raw_query: str, k: int = 3) -> dict:
-        normalized, language, message_type = normalize_query(self.chat_model, raw_query)
+    def run(self, raw_query: str, history: list[dict] | None = None, k: int = 3) -> dict:
+        normalized, language, message_type = normalize_query(self.chat_model, raw_query, history=history)
         # Small talk skips retrieval entirely: similarity search always returns
         # top-k regardless of relevance, and stray FAQ context tempts the model
         # into volunteering topics the user never raised.
         faq_docs = []
         if message_type == "question":
             faq_docs = retrieve_faqs(self.vectorstore, normalized, k=k)
-        reply = generate_reply(self.chat_model, raw_query, faq_docs, language=language)
+        reply = generate_reply(self.chat_model, raw_query, faq_docs, language=language, history=history)
         return {
             "reply": reply,
             "normalized_query": normalized,

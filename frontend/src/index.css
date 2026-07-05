@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url("https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400..700&family=Noto+Naskh+Arabic:wght@400..700&family=Inter:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -62,6 +62,66 @@ body {
 .noor-card:hover::after {
   transform: translateX(130%);
   transition: transform 700ms ease;
+}
+
+/* End-chat confirmation dialog: overlay and panel fade/pop in, and play
+   the same animations in reverse while unmounting (.closing) */
+@keyframes overlay-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes overlay-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-pop-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+}
+
+.modal-overlay {
+  animation: overlay-fade 180ms ease-out;
+}
+
+/* Exit uses distinct keyframe names: browsers only restart an animation
+   when animation-name changes, so reusing the entrance name won't replay. */
+.modal-overlay.closing {
+  animation: overlay-fade-out 180ms ease-in forwards;
+}
+
+.modal-pop {
+  animation: modal-pop 180ms ease-out;
+}
+
+.modal-pop.closing {
+  animation: modal-pop-out 160ms ease-in forwards;
 }
 
 /* Subtle theme-matched scrollbar for the chat message list */
